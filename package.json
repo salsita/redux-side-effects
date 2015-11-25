@@ -3,6 +3,10 @@
   "version": "0.2.0",
   "description": "Redux toolset for keeping all the side effects inside your reducers while maintaining their purity.",
   "main": "lib/index.js",
+  "files": [
+    "lib",
+    "src"
+  ],
   "jsnext:main": "src/index.js",
   "scripts": {
     "build:lib": "./node_modules/.bin/babel src --out-dir lib",
