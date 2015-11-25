@@ -1,7 +1,5 @@
-import effectCapableReducerEnhancer from './effectCapableReducerEnhancer';
-import effectHandlingMiddleware from './effectHandlingMiddleware';
+import createEffectCapableStore from './createEffectCapableStore';
 
 export {
-  effectCapableReducerEnhancer,
-  effectHandlingMiddleware
+  createEffectCapableStore
 };
