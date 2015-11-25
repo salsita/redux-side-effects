@@ -8,7 +8,7 @@
     "build:lib": "./node_modules/.bin/babel src --out-dir lib",
     "check": "npm run lint && npm run test",
     "lint": "./node_modules/.bin/eslint src/",
-    "preversion": "pm run check",
+    "preversion": "npm run check",
     "version": "npm run build:lib",
     "postversion": "git push && git push --tags",
     "prepublish": "npm run build:lib",
