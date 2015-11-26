@@ -40,7 +40,7 @@ export const wrapDispatch = store => action => {
     `It's allowed to yield only functions (side effect)`);
 
   // Effects are executed after action is dispatched
-  effects.forEach(effect => effect(store.dispatch));
+  effects.forEach(effect => effect(wrapDispatch(store)));
 
   return result;
 };

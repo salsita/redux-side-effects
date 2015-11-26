@@ -34,8 +34,6 @@ describe('Create effect capable store', () => {
     wrapped(action);
 
     assert.isTrue(store.dispatch.calledWith(action));
-    assert.isTrue(effect1.calledWith(store.dispatch));
-    assert.isTrue(effect2.calledWith(store.dispatch));
   });
 
   it('should allow to pass only function as effect', () => {
@@ -46,5 +44,20 @@ describe('Create effect capable store', () => {
     } catch (ex) {
       assert.equal(ex.message, `Invariant violation: It's allowed to yield only functions (side effect)`);
     }
+  });
+
+  it('should allow to yield effect within action which has been dispatched through effect', () => {
+    const effect1 = spy(dispatch => {
+      if (effect1.callCount === 1) {
+        dispatch();
+      }
+    });
+
+    stub(store, 'getState').returns(new AppStateWithEffects({}, [effect1]));
+
+    const wrappedDispatch = wrapDispatch(store);
+    wrappedDispatch();
+
+    assert.equal(effect1.callCount, 2);
   });
 });
