@@ -9,11 +9,12 @@ Believe it or not, but side effects are still tied with your application's domai
 Some people (I am one of them) believe that [Elm](https://github.com/evancz/elm-architecture-tutorial/#example-5-random-gif-viewer) has found the proper way how to handle side effects. Yes, we have a solution for async code in [redux](https://github.com/rackt/redux) and it's [`redux-thunk`](https://github.com/gaearon/redux-thunk) but the solution has two major drawbacks:
 
 1) Application logic is not in one place, which leads to the state where business domain may be encapsulated by service domain.
+
 2) Unit testing of some use cases which heavy relies on side effect is nearly impossible. Yes, you can always test those things in isolation but then you will lose the context. It's breaking the logic apart, which is making it basically impossible to test.
 
 Therefore ideal solution is to keep the domain logic where it belongs (reducers) and abstract away execution of side effects. Which means that your reducers will still be pure (Yes! Also hot-reloadable and easily testable). There are basically two options, either we can abuse reducer's reduction (which is basically a form of I/O Monad) or we can simply put a bit more syntactic sugar on it.
 
-Because ES6 [generators](https://developer.mozilla.org/cs/docs/Web/JavaScript/Reference/Statements/function*) is an excellent way how to perform a lazy evaluation, it's also a perfect tool for the syntax sugar for side effects.
+Because ES6 [generators](https://developer.mozilla.org/cs/docs/Web/JavaScript/Reference/Statements/function*) is an excellent way how to perform lazy evaluation, it's also a perfect tool for the syntax sugar to simplify working with side effects.
 
 Just imagine, you can `yield` a function which is not executed in the reducer itself but the execution is simply deferred.
 
