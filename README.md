@@ -141,4 +141,8 @@ Unfortunately no. Only `function*` is valid ES6 syntax.
 
 > I am using combineReducers, how does this work with redux-side-effects?
 
-Coming soon...
+If you are using standard Redux [`combineReducer`](http://rackt.org/redux/docs/api/combineReducers.html) in your application, please use the imported version from this package, original implementation does not work with generators. However, keep in mind that this method is [opinionated](http://rackt.org/redux/docs/api/combineReducers.html#notes) and therefore you should probably provide your own implementation.
+
+Usage is simple:
+
+`import { combineReducers } from 'redux-side-effects'`
