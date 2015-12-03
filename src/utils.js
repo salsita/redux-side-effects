@@ -129,7 +129,7 @@ export const generatorMapObject = function*(object, generatorFn) {
   const keys = Object.keys(object);
 
   function* recur(memo, index) {
-    memo[keys[index]] = yield* generatorFn(object[keys[index]], index);
+    memo[keys[index]] = yield* generatorFn(object[keys[index]], keys[index]);
     return keys[index + 1] ? yield* recur(memo, index + 1) : memo;
   }
 

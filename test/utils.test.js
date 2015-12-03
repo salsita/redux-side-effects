@@ -87,4 +87,48 @@ describe('Utils', () => {
 
     assert.deepEqual(mapped, [2, 3, 4]);
   });
+
+  it('should return true if generator is provided', () => {
+    assert.isTrue(Utils.isGenerator(function*() {}));
+  });
+
+  it('should return false if generator is not provided', () => {
+    assert.isFalse(Utils.isGenerator(() => {}));
+  });
+
+  it('should use the mapper to map over the object', () => {
+    const map = {
+      'foo': 0,
+      'bar': 1
+    };
+
+    const mapped = Utils.mapObject(map, (value, key) => `${key}${value + 1}`);
+    assert.deepEqual(mapped, {
+      'foo': 'foo1',
+      'bar': 'bar2'
+    });
+  });
+
+  it('should use the generator mapper to map over object and yield values', () => {
+    const map = {
+      'foo': 0,
+      'bar': 1
+    };
+
+    function* generatorMapper(value, key) {
+      yield key + value;
+      return value + 1;
+    }
+
+    assert.deepEqual({'foo': 1, 'bar': 2}, Utils.getGeneratorReturnValue(Utils.generatorMapObject(map, generatorMapper)));
+    assert.deepEqual(['foo0', 'bar1'], Utils.filterGeneratorYieldedValues(Utils.generatorMapObject(map, generatorMapper)));
+  });
+
+  it('should filter in yielded values', () => {
+    assert.deepEqual(Utils.filterGeneratorYieldedValues(generator()), [1, 2]);
+  });
+
+  it('should return returned value withing generator', () => {
+    assert.equal(Utils.getGeneratorReturnValue(generator()), 3);
+  });
 });
