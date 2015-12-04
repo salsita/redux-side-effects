@@ -49,5 +49,8 @@
     "isparta": "^3.0.3",
     "mocha": "^2.2.5",
     "sinon": "^1.17.2"
+  },
+  "peerDependencies": {
+    "babel-runtime": "^5.8.25"
   }
 }
