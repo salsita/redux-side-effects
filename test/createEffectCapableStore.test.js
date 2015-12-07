@@ -1,8 +1,9 @@
 import { assert } from 'chai';
 import { stub, spy } from 'sinon';
+import { createStore } from 'redux';
 
 import AppStateWithEffects from '../src/AppStateWithEffects';
-import { wrapGetState, wrapDispatch } from '../src/createEffectCapableStore';
+import createEffectCapableStore, { wrapGetState, wrapDispatch } from '../src/createEffectCapableStore';
 
 describe('Create effect capable store', () => {
   let store;
@@ -59,5 +60,19 @@ describe('Create effect capable store', () => {
     wrappedDispatch();
 
     assert.equal(effect1.callCount, 2);
+  });
+
+  it('should wrap the next reducer even when the replaceReducer is called', () => {
+    function* testingReducer() {
+      yield () => 1;
+      return 1;
+    }
+
+    const testingStore = createEffectCapableStore(createStore)(testingReducer);
+    testingStore.dispatch({type: 'test'});
+    assert.isTrue(testingStore.liftGetState() instanceof AppStateWithEffects);
+
+    testingStore.replaceReducer(testingReducer);
+    assert.isTrue(testingStore.liftGetState() instanceof AppStateWithEffects);
   });
 });

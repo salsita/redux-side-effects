@@ -46,6 +46,17 @@ export const wrapDispatch = store => action => {
 };
 
 /**
+ * Wraps Store `replaceReducer` method. The implementation just calls
+ * the original `replaceReducer` method but the provided next reducer
+ * is enhanced.
+ *
+ * @param {Object} Original Store
+ * @returns {Function} Wrapped `replaceReducer`
+ */
+export const wrapReplaceReducer = store => nextReducer =>
+  store.replaceReducer(enhanceReducer(nextReducer));
+
+/**
  * Creates enhanced store factory, which takes original `createStore` as argument.
  * The store's `dispatch` and `getState` methods are wrapped with custom implementation.
  *
@@ -62,6 +73,8 @@ export default createStore => (rootReducer, initialState) => {
   return {
     ...store,
     dispatch: wrapDispatch(store),
-    getState: wrapGetState(store)
+    getState: wrapGetState(store),
+    liftGetState: () => store.getState(),
+    replaceReducer: wrapReplaceReducer(store)
   };
 };

@@ -49,6 +49,7 @@
     "eslint": "^1.9.0",
     "isparta": "^3.0.3",
     "mocha": "^2.2.5",
+    "redux": "^3.0.4",
     "sinon": "^1.17.2"
   },
   "peerDependencies": {
