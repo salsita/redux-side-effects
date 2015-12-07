@@ -42,15 +42,21 @@ export const isIterable = value => !isUndefined(value) && isFunction(value.next)
 
 /**
  * Checks whether provided argument is generator.
+ * The implementation is quite fragile. The current state
+ * however does not allow reliable implementation of `isGenerator`
+ * function.
  *
  * @param {any} Anything
  *
  * @returns {Boolean} Result of generator check
  */
 export const isGenerator = fn => {
-  const Generator = (function*() {}).constructor;
-
-  return fn instanceof Generator;
+  if (isFunction(fn)) {
+    const result = fn();
+    return !!result && isFunction(result._invoke);
+  } else {
+    return false;
+  }
 };
 
 /**
