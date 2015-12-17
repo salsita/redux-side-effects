@@ -56,7 +56,7 @@ export default createStore => (rootReducer, initialState) => {
    * mechanisms for server side data prefetching.
    *
    * @param {any} The action to dispatch.
-   * @returns {Array<any>} The result of all of the dispatched actions and the result of the main action as the last item in the array.
+   * @returns {Array<any>} The result of the dispatched actions and the result of the main action.
    */
 
   const dispatchReturnEffects = action => {
