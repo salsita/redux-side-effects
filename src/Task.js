@@ -1,4 +1,4 @@
-import { isUndefined, defer, clearDefer } from './utils';
+import { invariant, isUndefined, defer, clearDefer } from './utils';
 
 /**
  * A utility class to manage a single defferable task.

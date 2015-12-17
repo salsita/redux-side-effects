@@ -72,6 +72,14 @@ describe('Utils', () => {
     }
   });
 
+  it('will defer a callback to be called later', done => Utils.defer(done));
+
+  it('will stop a deferred callback from being called', done => {
+    const deferId = Utils.defer(() => done(new Error('Should never be called')));
+    Utils.clearDefer(deferId);
+    done();
+  });
+
   it('should call the mapper function as many times as there are elements in the iterable', () => {
     const mapper = spy(() => {});
 
