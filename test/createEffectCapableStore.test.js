@@ -1,6 +1,10 @@
 import { assert } from 'chai';
 import { stub, spy } from 'sinon';
-import { createStore } from 'redux';
+import {
+  createStore,
+  applyMiddleware,
+  compose
+} from 'redux';
 
 import AppStateWithEffects from '../src/AppStateWithEffects';
 import createEffectCapableStore, { wrapGetState, wrapDispatch } from '../src/createEffectCapableStore';
@@ -74,5 +78,45 @@ describe('Create effect capable store', () => {
 
     testingStore.replaceReducer(testingReducer);
     assert.isTrue(testingStore.liftGetState() instanceof AppStateWithEffects);
+  });
+
+  it('should return all effects as promises to be processed by next middleware in the chain', done => {
+    const INITIATE_ASYNC = 'INITIATE_ASYNC';
+    const ASYNC_PROCESSED = 'ASYNC_PROCESSED';
+
+    const apiMock = value => new Promise(res => setTimeout(() => res(value + 1), 0));
+
+    const effectResolvingMiddleware = ({ getState }) => next => action => {
+      const result = next(action);
+
+      Promise
+        .all(result.effectPromises)
+        .then(() => {
+          assert.equal(getState(), 42);
+          done();
+        });
+    };
+
+    const storeFactory = compose(
+      applyMiddleware(effectResolvingMiddleware),
+      createEffectCapableStore
+    )(createStore);
+
+    const createdStore = storeFactory(function*(appState = 41, {type, payload}) {
+      switch (type) {
+      case INITIATE_ASYNC:
+        yield () => console.log('simple non promise side effect');
+        yield dispatch => apiMock(appState).then(incrementedAppState => dispatch({type: ASYNC_PROCESSED, payload: incrementedAppState}));
+        return appState;
+
+      case ASYNC_PROCESSED:
+        return payload;
+
+      default:
+        return appState;
+      }
+    });
+
+    createdStore.dispatch({type: INITIATE_ASYNC});
   });
 });

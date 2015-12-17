@@ -40,9 +40,21 @@ export const wrapDispatch = store => action => {
     `It's allowed to yield only functions (side effect)`);
 
   // Effects are executed after action is dispatched
-  effects.forEach(effect => effect(wrapDispatch(store)));
+  const effectPromises = effects.map(effect => {
+    const effectResult = effect(wrapDispatch(store));
 
-  return result;
+    // TODO: this should obviously be something like isThenable
+    if (!(effectResult instanceof Promise)) {
+      return new Promise(resolve => resolve(effectResult));
+    } else {
+      return effectResult;
+    }
+  });
+
+  return {
+    action: result,
+    effectPromises
+  };
 };
 
 /**
