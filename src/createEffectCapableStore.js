@@ -1,60 +1,5 @@
-import { invariant, isFunction } from './utils';
-import enhanceReducer from './enhanceReducer';
-import AppStateWithEffects from './AppStateWithEffects';
-
-/**
- * Wraps Store `getState` method. Instead of returning just plain old state,
- * it's assumed that the returned state is instance of `AppStateWithEffects`,
- * therefore it proxies the call to `getAppState`.
- *
- * @param {Object} Original Store
- * @returns {Function} Wrapped `getState`
- */
-export const wrapGetState = store => () => {
-  const state = store.getState();
-
-  if (state instanceof AppStateWithEffects) {
-    return state.getAppState();
-  } else {
-    return state;
-  }
-};
-
-/**
- * Wraps Store `dispatch` method. The original `dispatch` is called first, then
- * it iterates over all the effects returned from the `getState` function.
- * Every effect is then executed and dispatch is passed as the first argument.
- *
- * @param {Object} Original Store
- * @returns {Function} Wrapped `dispatch`
- */
-export const wrapDispatch = store => action => {
-  // Let's just dispatch original action,
-  // the original dispatch might actually be
-  // enhanced by some middlewares.
-  const result = store.dispatch(action);
-
-  const effects = store.getState().getEffects();
-
-  invariant(effects.every(isFunction),
-    `It's allowed to yield only functions (side effect)`);
-
-  // Effects are executed after action is dispatched
-  effects.forEach(effect => effect(wrapDispatch(store)));
-
-  return result;
-};
-
-/**
- * Wraps Store `replaceReducer` method. The implementation just calls
- * the original `replaceReducer` method but the provided next reducer
- * is enhanced.
- *
- * @param {Object} Original Store
- * @returns {Function} Wrapped `replaceReducer`
- */
-export const wrapReplaceReducer = store => nextReducer =>
-  store.replaceReducer(enhanceReducer(nextReducer));
+import Task from './Task';
+import createEnhanceReducer from './createEnhanceReducer';
 
 /**
  * Creates enhanced store factory, which takes original `createStore` as argument.
@@ -68,13 +13,67 @@ export const wrapReplaceReducer = store => nextReducer =>
  * @returns {Function} Store factory
  */
 export default createStore => (rootReducer, initialState) => {
-  const store = createStore(enhanceReducer(rootReducer), new AppStateWithEffects(initialState, []));
+  // Reference to the store dispatch function.
+  let dispatch;
+
+  const cleanTask = new Task();
+  const effectQueue = [];
+
+  /**
+   * Takes all of the effects in the closure effect queue, dispatches them,
+   * captures their values and empties the queue.
+   *
+   * @private
+   * @returns {Array<any>} The return values of dispatch.
+   */
+
+  const cleanEffectQueue = () => {
+    const values = effectQueue.map(dispatch);
+    effectQueue.length = 0; // @see https://davidwalsh.name/empty-array
+    return values;
+  };
+
+  /**
+   * Defers an effect to be dispatched by `cleanEffectQueue` later. Does this by
+   * adding the effect to an internal queue and deferring the `cleanEffectQueue`
+   * function if no other task is set.
+   *
+   * @private
+   * @param {any} The effect action to be dispatched later.
+   */
+
+  const deferEffect = effect => {
+    effectQueue.push(effect);
+
+    if (!cleanTask.isSet()) {
+      cleanTask.defer(cleanEffectQueue);
+    }
+  };
+
+  /**
+   * Dispatches an action object, like normal, but also captures the result of effects
+   * to return to the user. This allows a user to use `Promise.all` or other await
+   * mechanisms for server side data prefetching.
+   *
+   * @param {any} The action to dispatch.
+   * @returns {Array<any>} The result of all of the dispatched actions and the result of the main action as the last item in the array.
+   */
+
+  const dispatchReturnEffects = action => {
+    const mainEffect = dispatch(action);
+    return cleanEffectQueue().concat([mainEffect]);
+  };
+
+  // Create the reducer enhancer.
+  const enhanceReducer = createEnhanceReducer(deferEffect);
+
+  // Create the store and set the `dispatch` reference to the store dispatch method.
+  const store = createStore(enhanceReducer(rootReducer), initialState);
+  dispatch = store.dispatch;
 
   return {
     ...store,
-    dispatch: wrapDispatch(store),
-    getState: wrapGetState(store),
-    liftGetState: () => store.getState(),
-    replaceReducer: wrapReplaceReducer(store)
+    replaceReducer: nextReducer => store.replaceReducer(enhanceReducer(nextReducer)), // TODO: This could be a good usecase for a compose function?
+    dispatchReturnEffects
   };
 };
