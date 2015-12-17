@@ -61,9 +61,10 @@ describe('Create effect capable store', () => {
     }
 
     const testingStore = createEffectCapableStore(applyMiddleware(thunk)(createStore))(testingReducer);
-    const effects = testingStore.dispatchReturnEffects({ type: 'a' });
+    testingStore.dispatch({ type: 'a' });
+    const effects = testingStore.dispatchEffects();
     assert.equal(testingStore.getState(), 2);
-    assert.deepEqual(effects, [{ type: 'a' }, { type: 'b' }, 42]);
+    assert.deepEqual(effects, [{ type: 'b' }, 42]);
   });
 
   it('should wrap the next reducer even when the replaceReducer is called', () => {

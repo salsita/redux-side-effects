@@ -51,19 +51,14 @@ export default createStore => (rootReducer, initialState) => {
   };
 
   /**
-   * Dispatches an action object, like normal, but also captures the result of effects
-   * to return to the user. This allows a user to use `Promise.all` or other await
-   * mechanisms for server side data prefetching.
+   * Dispatches all side effects now instead of later. This allows a user to use
+   * `Promise.all` or other await mechanisms for server side data prefetching.
+   * Simply a store alias for `cleanEffectQueue`.
    *
-   * @param {any} The action to dispatch.
-   * @returns {Array<any>} The result of the dispatched actions and the result of the main action.
+   * @see cleanEffectQueue
    */
 
-  const dispatchReturnEffects = action => {
-    const mainEffect = dispatch(action);
-    const effects = cleanEffectQueue();
-    return [mainEffect, ...effects];
-  };
+  const dispatchEffects = cleanEffectQueue;
 
   // Create the reducer enhancer.
   const enhanceReducer = createEnhanceReducer(deferEffect);
@@ -74,7 +69,7 @@ export default createStore => (rootReducer, initialState) => {
 
   return {
     ...store,
-    dispatchReturnEffects,
+    dispatchEffects,
     replaceReducer: nextReducer => store.replaceReducer(enhanceReducer(nextReducer)) // TODO: This could be a good usecase for a compose function?
   };
 };
