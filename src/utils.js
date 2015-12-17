@@ -105,6 +105,23 @@ export const first = arr => {
 };
 
 /**
+ * Takes a callback and defers it for later.
+ *
+ * @param {Function} The callback to defer
+ * @returns {number} The id of the timeout
+ */
+
+export const defer = callback => setTimeout(callback, 0);
+
+/**
+ * Stops a deffered callback from executing.
+ *
+ * @param {number} The id of the timeout
+ */
+
+export const clearDefer = timeoutId => clearTimeout(timeoutId);
+
+/**
  * Standard map implementation which works with type of Object
  *
  * @param {Object} Object to be mapped
