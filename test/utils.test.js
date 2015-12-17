@@ -52,6 +52,15 @@ describe('Utils', () => {
     assert.isFalse(Utils.isIterable(false));
   });
 
+  it('should use isPlainObject to detect a plain object', () => {
+    assert.isTrue(Utils.isPlainObject({}));
+    assert.isTrue(Utils.isPlainObject({ key: 'value' }));
+    assert.isFalse(Utils.isPlainObject(true));
+    assert.isFalse(Utils.isPlainObject(5));
+    assert.isFalse(Utils.isPlainObject('object'));
+    assert.isFalse(Utils.isPlainObject(new Error('Whoops!')));
+  });
+
   it('will defer a callback to be called later', done => Utils.defer(done));
 
   it('will stop a deferred callback from being called', done => {

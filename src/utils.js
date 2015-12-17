@@ -1,4 +1,12 @@
 /**
+ * Returns true if we are in a development environment.
+ *
+ * @returns {Boolean} True if in a development environment
+ */
+
+export const isDevelopmentEnvironment = () => process.env.NODE_ENV === 'development';
+
+/**
  * Simple invariant check.
  *
  * @param {Boolean} A condition to be met
@@ -29,6 +37,16 @@ export const isFunction = any => typeof any === 'function';
  * @returns {Boolean} Result of undefined check
  */
 export const isUndefined = any => typeof any === 'undefined';
+
+/**
+ * Checks whether provided argument is a plain ol' object.
+ *
+ * @param {any} Anything
+ *
+ * @returns {Boolean} Result of plain object check
+ */
+
+export const isPlainObject = any => typeof any === 'object' && Object.getPrototypeOf(any) === Object.prototype;
 
 /**
  * Checks whether provided argument is iterable. The value must be defined and

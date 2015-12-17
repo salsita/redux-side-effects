@@ -1,3 +1,4 @@
+import { isDevelopmentEnvironment, isPlainObject } from './utils';
 import Task from './Task';
 import createEnhanceReducer from './createEnhanceReducer';
 
@@ -11,6 +12,9 @@ import createEnhanceReducer from './createEnhanceReducer';
 export default createStore => (rootReducer, initialState) => {
   // Reference to the store dispatch function.
   let dispatch;
+  let cleaningEffects = false;
+  let warnedPlainAction = false;
+  let warnedEffectEffects = false;
 
   const cleanTask = new Task();
   const effectQueue = [];
@@ -24,8 +28,10 @@ export default createStore => (rootReducer, initialState) => {
    */
 
   const cleanEffectQueue = () => {
+    cleaningEffects = true;
     const values = effectQueue.map(dispatch);
     effectQueue.length = 0; // @see https://davidwalsh.name/empty-array
+    cleaningEffects = false;
     return values;
   };
 
@@ -39,6 +45,27 @@ export default createStore => (rootReducer, initialState) => {
    */
 
   const deferEffect = effect => {
+    if (isDevelopmentEnvironment()) {
+      if (!warnedPlainAction && isPlainObject(effect)) {
+        warnedPlainAction = true;
+        console.warn(
+          'redux-side-effects: ' +
+          'Yeilding a plain object generally means you are cascading actions, ' +
+          'this is a banned practice (http://stackoverflow.com/questions/29309214). ' +
+          'Try to use thunks instead.'
+        );
+      }
+
+      if (!warnedEffectEffects && cleaningEffects) {
+        warnedEffectEffects = true;
+        console.warn(
+          'redux-side-effects: ' +
+          'It is generally a bad practice for side effects to have side effects. ' +
+          'Instead try to dispatch all side effects at once.'
+        );
+      }
+    }
+
     effectQueue.push(effect);
 
     if (!cleanTask.isSet()) {
