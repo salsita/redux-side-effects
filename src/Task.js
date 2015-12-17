@@ -32,7 +32,7 @@ export default class Task {
     }
 
     this._id = defer(() => {
-      this.reset();
+      this.clear();
       callback();
     });
   }
