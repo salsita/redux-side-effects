@@ -81,7 +81,7 @@ describe('Utils', () => {
   });
 
   it('should return the mapped array', () => {
-    const mapper = val => val + 1;
+    const mapper = ({ value }) => value + 1;
 
     const mapped = Utils.mapIterable(generator(), mapper);
 
