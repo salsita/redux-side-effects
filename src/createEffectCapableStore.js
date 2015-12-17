@@ -61,7 +61,8 @@ export default createStore => (rootReducer, initialState) => {
 
   const dispatchReturnEffects = action => {
     const mainEffect = dispatch(action);
-    return cleanEffectQueue().concat([mainEffect]);
+    const effects = cleanEffectQueue();
+    return [mainEffect, ...effects];
   };
 
   // Create the reducer enhancer.
@@ -73,7 +74,7 @@ export default createStore => (rootReducer, initialState) => {
 
   return {
     ...store,
-    replaceReducer: nextReducer => store.replaceReducer(enhanceReducer(nextReducer)), // TODO: This could be a good usecase for a compose function?
-    dispatchReturnEffects
+    dispatchReturnEffects,
+    replaceReducer: nextReducer => store.replaceReducer(enhanceReducer(nextReducer)) // TODO: This could be a good usecase for a compose function?
   };
 };

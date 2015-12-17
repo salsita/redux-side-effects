@@ -1,78 +1,81 @@
 import { assert } from 'chai';
-import { stub, spy } from 'sinon';
-import { createStore } from 'redux';
+import { createStore, applyMiddleware } from 'redux';
+import thunk from 'redux-thunk';
 
-import AppStateWithEffects from '../src/AppStateWithEffects';
-import createEffectCapableStore, { wrapGetState, wrapDispatch } from '../src/createEffectCapableStore';
+import createEffectCapableStore from '../src/createEffectCapableStore';
+
+const testAction = { type: 'test' };
 
 describe('Create effect capable store', () => {
-  let store;
-
-  beforeEach(() => {
-    store = {
-      getState: () => {},
-      dispatch: () => {}
-    };
-  });
-
-  it('should return the original app state when calling wrappedGetState method', () => {
-    const appState =  'stub';
-    stub(store, 'getState').returns(new AppStateWithEffects(appState, []));
-
-    const wrapped = wrapGetState(store);
-    assert.equal(wrapped(), appState);
-  });
-
-  it('should execute all the effects which are inside AppStateWithEffects', () => {
-    const action = 'stub';
-    const effect1 = spy();
-    const effect2 = spy();
-
-    spy(store, 'dispatch');
-    stub(store, 'getState').returns(new AppStateWithEffects({}, [effect1, effect2]));
-
-    const wrapped = wrapDispatch(store);
-    wrapped(action);
-
-    assert.isTrue(store.dispatch.calledWith(action));
-  });
-
-  it('should allow to pass only function as effect', () => {
-    try {
-      stub(store, 'getState').returns(new AppStateWithEffects({}, [false]));
-      const wrapped = wrapDispatch(store);
-      wrapped();
-    } catch (ex) {
-      assert.equal(ex.message, `Invariant violation: It's allowed to yield only functions (side effect)`);
-    }
-  });
-
-  it('should allow to yield effect within action which has been dispatched through effect', () => {
-    const effect1 = spy(dispatch => {
-      if (effect1.callCount === 1) {
-        dispatch();
-      }
-    });
-
-    stub(store, 'getState').returns(new AppStateWithEffects({}, [effect1]));
-
-    const wrappedDispatch = wrapDispatch(store);
-    wrappedDispatch();
-
-    assert.equal(effect1.callCount, 2);
-  });
-
-  it('should wrap the next reducer even when the replaceReducer is called', () => {
+  it('enhances a generator function reducer', () => {
     function* testingReducer() {
-      yield () => 1;
+      yield testAction;
       return 1;
     }
 
     const testingStore = createEffectCapableStore(createStore)(testingReducer);
-    testingStore.dispatch({type: 'test'});
-    assert.isTrue(testingStore.liftGetState() instanceof AppStateWithEffects);
+    testingStore.dispatch(testAction);
+    assert.equal(testingStore.getState(), 1);
+  });
 
+  it('will dispatch a yielded action later asynchronously', done => {
+    function* testingReducer(state, { type }) {
+      yield { type: 'b' };
+      return type === 'a' ? 1 : 2;
+    }
+
+    const testingStore = createEffectCapableStore(createStore)(testingReducer);
+    testingStore.dispatch({ type: 'a' });
+    assert.equal(testingStore.getState(), 1);
+
+    setTimeout(() => {
+      assert.equal(testingStore.getState(), 2);
+      done();
+    }, 0);
+  });
+
+  it('will work with applied middleware', done => {
+    function* testingReducer(state, { type }) {
+      yield dispatch => dispatch({ type: 'b' });
+      return type === 'a' ? 1 : 2;
+    }
+
+    const testingStore = createEffectCapableStore(applyMiddleware(thunk)(createStore))(testingReducer);
+    testingStore.dispatch({ type: 'a' });
+    assert.equal(testingStore.getState(), 1);
+
+    setTimeout(() => {
+      assert.equal(testingStore.getState(), 2);
+      done();
+    }, 0);
+  });
+
+  it('can dispatch effects synchronously and return results', () => {
+    function* testingReducer(state, { type }) {
+      if (type === 'a') {
+        yield { type: 'b' };
+        yield () => 42;
+        return 1;
+      }
+      return 2;
+    }
+
+    const testingStore = createEffectCapableStore(applyMiddleware(thunk)(createStore))(testingReducer);
+    const effects = testingStore.dispatchReturnEffects({ type: 'a' });
+    assert.equal(testingStore.getState(), 2);
+    assert.deepEqual(effects, [{ type: 'a' }, { type: 'b' }, 42]);
+  });
+
+  it('should wrap the next reducer even when the replaceReducer is called', () => {
+    function* testingReducer() {
+      yield testAction;
+      return 1;
+    }
+
+    const testingStore = applyMiddleware(thunk)(createEffectCapableStore(createStore))(testingReducer);
+    testingStore.dispatch(testAction);
+    assert.equal(testingStore.getState(), 1);
     testingStore.replaceReducer(testingReducer);
-    assert.isTrue(testingStore.liftGetState() instanceof AppStateWithEffects);
+    assert.equal(testingStore.getState(), 1);
   });
 });
