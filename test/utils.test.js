@@ -52,26 +52,6 @@ describe('Utils', () => {
     assert.isFalse(Utils.isIterable(false));
   });
 
-  it('should throw an exception when passing an empty array as an argument to `first` function', () => {
-    try {
-      spy(Utils, 'first');
-
-      Utils.first([]);
-    } catch (ex) {
-      assert.isTrue(Utils.first.threw());
-    }
-  });
-
-  it('should throw an exception when passing non array as an argument to `first` function', () => {
-    try {
-      spy(Utils, 'first');
-
-      Utils.first(false);
-    } catch (ex) {
-      assert.isTrue(Utils.first.threw());
-    }
-  });
-
   it('will defer a callback to be called later', done => Utils.defer(done));
 
   it('will stop a deferred callback from being called', done => {

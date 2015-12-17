@@ -5,10 +5,6 @@ import createEnhanceReducer from './createEnhanceReducer';
  * Creates enhanced store factory, which takes original `createStore` as argument.
  * The store's `dispatch` and `getState` methods are wrapped with custom implementation.
  *
- * wrappedDispatch calls the original dispatch and executes all the side effects.
- *
- * wrappedGetState unwraps original applicaiton state from `AppStateWithEffects`
- *
  * @param {Function} Original createStore implementation to be enhanced
  * @returns {Function} Store factory
  */

@@ -89,22 +89,6 @@ export const mapIterable = (iterable, mapper) => {
 };
 
 /**
- * Returns first element in a non-empty array;
- *
- * @param {Array}
- * @returns {any} First element in the provided Array
- */
-export const first = arr => {
-  invariant(Array.isArray(arr),
-    `Provided argument is not array`);
-
-  invariant(arr.length > 0,
-    `Provided array is empty`);
-
-  return arr[0];
-};
-
-/**
  * Takes a callback and defers it for later.
  *
  * @param {Function} The callback to defer
