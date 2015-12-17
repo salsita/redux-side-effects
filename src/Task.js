@@ -27,9 +27,8 @@ export default class Task {
    */
 
   defer(callback) {
-    if (this.isSet()) {
-      throw new Error('Cannot set a new task while another is currently set.');
-    }
+    invariant(!this.isSet(),
+      'Cannot set a new task while another is currently set.');
 
     this._id = defer(() => {
       this.clear();
