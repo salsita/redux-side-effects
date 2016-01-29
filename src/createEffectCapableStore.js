@@ -28,11 +28,11 @@ export const wrapGetState = store => () => {
  * @param {Object} Original Store
  * @returns {Function} Wrapped `dispatch`
  */
-export const wrapDispatch = store => action => {
+export const wrapDispatch = store => (...args) => {
   // Let's just dispatch original action,
   // the original dispatch might actually be
   // enhanced by some middlewares.
-  const result = store.dispatch(action);
+  const result = store.dispatch(...args);
 
   const effects = store.getState().getEffects();
 
