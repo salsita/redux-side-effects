@@ -4,7 +4,6 @@ redux-side-effects
 [![NPM version][npm-image]][npm-url]
 [![Dependencies][dependencies]][npm-url]
 [![Build status][travis-image]][travis-url]
-[![Test coverage][coveralls-image]][coveralls-url]
 [![Downloads][downloads-image]][downloads-url]
 
 
