@@ -1,4 +1,12 @@
-# redux-side-effects
+redux-side-effects
+=============
+
+[![NPM version][npm-image]][npm-url]
+[![Dependencies][dependencies]][npm-url]
+[![Build status][travis-image]][travis-url]
+[![Test coverage][coveralls-image]][coveralls-url]
+[![Downloads][downloads-image]][downloads-url]
+
 
 > What if your reducers were generators? You could yield side effects and return application state.
 
@@ -146,3 +154,12 @@ If you are using standard Redux [`combineReducer`](http://rackt.org/redux/docs/a
 Usage is simple:
 
 `import { combineReducers } from 'redux-side-effects'`
+
+
+[npm-image]: https://img.shields.io/npm/v/redux-side-effects.svg?style=flat-square
+[npm-url]: https://npmjs.org/package/redux-side-effects
+[travis-image]: https://img.shields.io/travis/salsita/redux-side-effects.svg?style=flat-square
+[travis-url]: https://travis-ci.org/salsita/redux-side-effects
+[downloads-image]: http://img.shields.io/npm/dm/redux-side-effects.svg?style=flat-square
+[downloads-url]: https://npmjs.org/package/redux-side-effects
+[dependencies]: https://david-dm.org/salsita/redux-side-effects.svg
