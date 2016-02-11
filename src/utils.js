@@ -51,10 +51,16 @@ export const isIterable = value => !isUndefined(value) && isFunction(value.next)
  * @returns {Boolean} Result of generator check
  */
 export const isGenerator = fn => {
-  if (isFunction(fn)) {
-    const result = fn();
-    return !!result && isFunction(result._invoke);
-  } else {
+  // Generator should never throw an exception because
+  // it's not executed, only iterable is returned
+  try {
+    if (isFunction(fn)) {
+      const result = fn();
+      return !!result && isFunction(result._invoke);
+    } else {
+      return false;
+    }
+  } catch (ex) {
     return false;
   }
 };

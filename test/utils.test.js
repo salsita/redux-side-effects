@@ -131,4 +131,12 @@ describe('Utils', () => {
   it('should return returned value withing generator', () => {
     assert.equal(Utils.getGeneratorReturnValue(generator()), 3);
   });
+
+  it('should caught any exception thrown by function provided to isGenerator', () => {
+    function nonGeneratorWithException() {
+      throw new Error('This should be caught');
+    }
+
+    assert.isFalse(Utils.isGenerator(nonGeneratorWithException));
+  });
 });
