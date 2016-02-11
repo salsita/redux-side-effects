@@ -16,7 +16,7 @@
     "version": "npm run build:lib",
     "postversion": "git push && git push --tags",
     "prepublish": "npm run build:lib",
-    "test": "./node_modules/.bin/mocha --compilers js:babel/register --recursive",
+    "test": "./node_modules/.bin/mocha --require babel-core/register --recursive",
     "test:cov": "./node_modules/.bin/babel-node $(npm bin)/isparta cover $(npm bin)/_mocha -- --recursive",
     "test:watch": "npm test -- --watch"
   },
