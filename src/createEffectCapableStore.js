@@ -20,7 +20,11 @@ export const wrapReplaceReducer = (store, deferEffects) => nextReducer =>
  */
 export default createStore => (rootReducer, initialState) => {
   let store = null;
-  const deferEffects = effects => setTimeout(() => effects.forEach(effect => effect(store.dispatch)), 0);
+
+  const deferEffects = effects =>
+    setTimeout(() =>
+      effects.forEach(([fn, ...args]) => fn(store.dispatch, ...args)), 0);
+
   store = createStore(enhanceReducer(rootReducer, deferEffects), initialState);
 
   return {
