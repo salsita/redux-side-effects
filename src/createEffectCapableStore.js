@@ -1,49 +1,4 @@
-import { invariant, isFunction } from './utils';
 import enhanceReducer from './enhanceReducer';
-import AppStateWithEffects from './AppStateWithEffects';
-
-/**
- * Wraps Store `getState` method. Instead of returning just plain old state,
- * it's assumed that the returned state is instance of `AppStateWithEffects`,
- * therefore it proxies the call to `getAppState`.
- *
- * @param {Object} Original Store
- * @returns {Function} Wrapped `getState`
- */
-export const wrapGetState = store => () => {
-  const state = store.getState();
-
-  if (state instanceof AppStateWithEffects) {
-    return state.getAppState();
-  } else {
-    return state;
-  }
-};
-
-/**
- * Wraps Store `dispatch` method. The original `dispatch` is called first, then
- * it iterates over all the effects returned from the `getState` function.
- * Every effect is then executed and dispatch is passed as the first argument.
- *
- * @param {Object} Original Store
- * @returns {Function} Wrapped `dispatch`
- */
-export const wrapDispatch = store => (...args) => {
-  // Let's just dispatch original action,
-  // the original dispatch might actually be
-  // enhanced by some middlewares.
-  const result = store.dispatch(...args);
-
-  const effects = store.getState().getEffects();
-
-  invariant(effects.every(isFunction),
-    `It's allowed to yield only functions (side effect)`);
-
-  // Effects are executed after action is dispatched
-  effects.forEach(effect => effect(wrapDispatch(store)));
-
-  return result;
-};
 
 /**
  * Wraps Store `replaceReducer` method. The implementation just calls
@@ -53,28 +8,23 @@ export const wrapDispatch = store => (...args) => {
  * @param {Object} Original Store
  * @returns {Function} Wrapped `replaceReducer`
  */
-export const wrapReplaceReducer = store => nextReducer =>
-  store.replaceReducer(enhanceReducer(nextReducer));
+export const wrapReplaceReducer = (store, deferEffects) => nextReducer =>
+  store.replaceReducer(enhanceReducer(nextReducer, deferEffects));
 
 /**
  * Creates enhanced store factory, which takes original `createStore` as argument.
- * The store's `dispatch` and `getState` methods are wrapped with custom implementation.
- *
- * wrappedDispatch calls the original dispatch and executes all the side effects.
- *
- * wrappedGetState unwraps original applicaiton state from `AppStateWithEffects`
+ * Returns modified store which is capable of handling Reducers in form of Generators.
  *
  * @param {Function} Original createStore implementation to be enhanced
  * @returns {Function} Store factory
  */
 export default createStore => (rootReducer, initialState) => {
-  const store = createStore(enhanceReducer(rootReducer), new AppStateWithEffects(initialState, []));
+  let store = null;
+  const deferEffects = effects => setTimeout(() => effects.forEach(effect => effect(store.dispatch)), 0);
+  store = createStore(enhanceReducer(rootReducer, deferEffects), initialState);
 
   return {
     ...store,
-    dispatch: wrapDispatch(store),
-    getState: wrapGetState(store),
-    liftGetState: () => store.getState(),
-    replaceReducer: wrapReplaceReducer(store)
+    replaceReducer: wrapReplaceReducer(store, deferEffects)
   };
 };

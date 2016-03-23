@@ -2,7 +2,6 @@ import { assert } from 'chai';
 import { stub, spy } from 'sinon';
 import { createStore } from 'redux';
 
-import AppStateWithEffects from '../src/AppStateWithEffects';
 import createEffectCapableStore, { wrapGetState, wrapDispatch } from '../src/createEffectCapableStore';
 
 describe('Create effect capable store', () => {

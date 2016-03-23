@@ -1,7 +1,6 @@
 import { assert } from 'chai';
 
 import enhanceReducer from '../src/enhanceReducer';
-import AppStateWithEffects from '../src/AppStateWithEffects';
 
 describe('Enhance Reducer', () => {
   it('should throw an exception when root reducer is not a function', () => {

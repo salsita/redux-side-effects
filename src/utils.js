@@ -85,29 +85,13 @@ export const mapIterable = (iterable, mapper) => {
   // return the last value in iteration loop
   const recur = acc => {
     const next = iterable.next();
-    acc.push(mapper(next.value, next.done));
+    acc.push(mapper(next));
 
     // ES6 tail call
     return next.done ? acc : recur(acc);
   };
 
   return recur([]);
-};
-
-/**
- * Returns first element in a non-empty array;
- *
- * @param {Array}
- * @returns {any} First element in the provided Array
- */
-export const first = arr => {
-  invariant(Array.isArray(arr),
-    `Provided argument is not array`);
-
-  invariant(arr.length > 0,
-    `Provided array is empty`);
-
-  return arr[0];
 };
 
 /**
