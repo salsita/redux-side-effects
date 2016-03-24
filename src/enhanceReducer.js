@@ -6,6 +6,10 @@ import {
   mapIterable
 } from './utils';
 
+import {
+  isSideEffect
+} from './sideEffect';
+
 /**
  * Iterator mapper, maps iterator to value
  *
@@ -35,6 +39,9 @@ export default (rootReducer, deferEffects) => (appState, action) => {
     // are just side effects.
     const effects = mapIterable(reduction, mapValue);
     const newState = effects.pop();
+
+    invariant(effects.every(isSideEffect),
+      'Yielded side effects must always be created using sideEffect function');
 
     deferEffects(effects);
 
