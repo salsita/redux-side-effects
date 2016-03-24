@@ -1,4 +1,5 @@
 import { assert } from 'chai';
+import { spy } from 'sinon';
 
 import enhanceReducer from '../src/enhanceReducer';
 import sideEffect from '../src/sideEffect';
@@ -8,32 +9,32 @@ describe('Enhance Reducer', () => {
     const enhanced = enhanceReducer(false);
 
     try {
-      enhanced(new AppStateWithEffects());
+      enhanced({});
     } catch (ex) {
       assert.equal(ex.message, 'Invariant violation: Provided root reducer is not a function.');
     }
   });
 
-  it('should return AppStateWithEffects even when root reducer is not a generator', () => {
-    const rootReducer = () => {};
-    const enhanced = enhanceReducer(rootReducer);
-    const reduction = enhanced(new AppStateWithEffects());
+  it('should return app state and execute side effect with provided arguments', () => {
+    const effect = () => {};
+    const executor = spy();
 
-    assert.isTrue(reduction instanceof AppStateWithEffects);
-  });
-
-  it('should return AppStateWithEffects with returned reduction and List of effects', () => {
     function* rootReducer() {
-      yield 1;
-      yield 2;
+      yield sideEffect(effect, 42, 'foobar');
+      yield sideEffect(effect, 43);
       return 3;
     }
 
-    const enchanced = enhanceReducer(rootReducer);
-    const reduction = enchanced(new AppStateWithEffects());
+    const enchanced = enhanceReducer(rootReducer, executor);
+    const reduction = enchanced({}, {});
 
-    assert.equal(reduction.getAppState(), 3);
-    assert.deepEqual(reduction.getEffects(), [1, 2]);
+    assert.equal(reduction, 3);
+    assert.deepEqual(executor.firstCall.args, [
+      [
+        sideEffect(effect, 42, 'foobar'),
+        sideEffect(effect, 43)
+      ]
+    ]);
   });
 
   it('should be allowed to yield only sideEffects', () => {
