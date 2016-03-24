@@ -1,6 +1,7 @@
 import { assert } from 'chai';
 
 import enhanceReducer from '../src/enhanceReducer';
+import sideEffect from '../src/sideEffect';
 
 describe('Enhance Reducer', () => {
   it('should throw an exception when root reducer is not a function', () => {
@@ -33,5 +34,28 @@ describe('Enhance Reducer', () => {
 
     assert.equal(reduction.getAppState(), 3);
     assert.deepEqual(reduction.getEffects(), [1, 2]);
+  });
+
+  it('should be allowed to yield only sideEffects', () => {
+    function* invalidReducer() {
+      yield 1;
+      yield sideEffect(() => {});
+      return 4;
+    }
+
+    function* validReducer() {
+      yield sideEffect(() => {});
+      yield sideEffect(() => {}, 'foo', 'bar');
+      return 42;
+    }
+
+    try {
+      enhanceReducer(invalidReducer, () => {})({}, {});
+      assert.isTrue(false);
+    } catch (ex) {
+      assert.equal(ex.message, 'Invariant violation: Yielded side effects must always be created using sideEffect function');
+    }
+
+    assert.equal(enhanceReducer(validReducer, () => {})({}, {}), 42);
   });
 });
