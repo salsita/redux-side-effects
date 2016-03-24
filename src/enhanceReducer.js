@@ -28,7 +28,7 @@ const mapValue = iterator => iterator.value;
  */
 export default (rootReducer, deferEffects) => (appState, action) => {
   invariant(isFunction(rootReducer),
-    `Provided root reducer is not a function.`);
+    'Provided root reducer is not a function.');
 
   // Calling the Root reducer should return an Iterable
   const reduction = rootReducer(appState, action);
@@ -46,7 +46,7 @@ export default (rootReducer, deferEffects) => (appState, action) => {
     deferEffects(effects);
 
     invariant(!isUndefined(newState),
-      `Root reducer does not return new application state. Undefined is returned`);
+      'Root reducer does not return new application state. Undefined is returned');
 
     return newState;
   } else {
