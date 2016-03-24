@@ -52,25 +52,6 @@ describe('Utils', () => {
     assert.isFalse(Utils.isIterable(false));
   });
 
-  it('should throw an exception when passing an empty array as an argument to `first` function', () => {
-    try {
-      spy(Utils, 'first');
-
-      Utils.first([]);
-    } catch (ex) {
-      assert.isTrue(Utils.first.threw());
-    }
-  });
-
-  it('should throw an exception when passing non array as an argument to `first` function', () => {
-    try {
-      spy(Utils, 'first');
-
-      Utils.first(false);
-    } catch (ex) {
-      assert.isTrue(Utils.first.threw());
-    }
-  });
 
   it('should call the mapper function as many times as there are elements in the iterable', () => {
     const mapper = spy(() => {});
@@ -81,7 +62,7 @@ describe('Utils', () => {
   });
 
   it('should return the mapped array', () => {
-    const mapper = val => val + 1;
+    const mapper = val => val.value + 1;
 
     const mapped = Utils.mapIterable(generator(), mapper);
 

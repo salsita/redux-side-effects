@@ -75,39 +75,23 @@ export const isGenerator = fn => {
  */
 export const mapIterable = (iterable, mapper) => {
   invariant(isIterable(iterable),
-    `First argument passed to mapIterable must be iterable`);
+    'First argument passed to mapIterable must be iterable');
 
   invariant(isFunction(mapper),
-    `Second argument passed to mapIterable must be a function`);
+    'Second argument passed to mapIterable must be a function');
 
   // Clojure like recur loop
   // It's not ideal to use for..of as it does not
   // return the last value in iteration loop
   const recur = acc => {
     const next = iterable.next();
-    acc.push(mapper(next.value, next.done));
+    acc.push(mapper(next));
 
     // ES6 tail call
     return next.done ? acc : recur(acc);
   };
 
   return recur([]);
-};
-
-/**
- * Returns first element in a non-empty array;
- *
- * @param {Array}
- * @returns {any} First element in the provided Array
- */
-export const first = arr => {
-  invariant(Array.isArray(arr),
-    `Provided argument is not array`);
-
-  invariant(arr.length > 0,
-    `Provided array is empty`);
-
-  return arr[0];
 };
 
 /**
@@ -136,7 +120,7 @@ export const mapObject = (object, fn) =>
  */
 export const generatorMapObject = function*(object, generatorFn) {
   invariant(isGenerator(generatorFn),
-    `First argument passed to filterGeneratorYieldedValues must be generator`);
+    'First argument passed to filterGeneratorYieldedValues must be generator');
 
   const keys = Object.keys(object);
 
@@ -157,7 +141,7 @@ export const generatorMapObject = function*(object, generatorFn) {
  */
 export const filterGeneratorYieldedValues = iterable => {
   invariant(isIterable(iterable),
-    `First argument passed to getGeneratorReturnValue must be an iterable`);
+    'First argument passed to getGeneratorReturnValue must be an iterable');
 
   const recur = acc => {
     const next = iterable.next();
@@ -182,7 +166,7 @@ export const filterGeneratorYieldedValues = iterable => {
  */
 export const getGeneratorReturnValue = iterable => {
   invariant(isIterable(iterable),
-    `First argument passed to getGeneratorReturnValue must be generator`);
+    'First argument passed to getGeneratorReturnValue must be generator');
 
   const recur = () => {
     const next = iterable.next();

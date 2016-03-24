@@ -17,19 +17,21 @@ Some people (I am one of them) believe that [Elm](https://github.com/evancz/elm-
 
 1) Application logic is not in one place, which leads to the state where business domain may be encapsulated by service domain.
 
-2) Unit testing of some use cases which heavy relies on side effect is nearly impossible. Yes, you can always test those things in isolation but then you will lose the context. It's breaking the logic apart, which is making it basically impossible to test.
+2) Unit testing of some use cases which heavy relies on side effect is nearly impossible. Yes, you can always test those things in isolation but then you will lose the context. It's breaking the logic apart, which is making it basically impossible to test as single unit.
 
 Therefore ideal solution is to keep the domain logic where it belongs (reducers) and abstract away execution of side effects. Which means that your reducers will still be pure (Yes! Also hot-reloadable and easily testable). There are basically two options, either we can abuse reducer's reduction (which is basically a form of I/O Monad) or we can simply put a bit more syntactic sugar on it.
 
 Because ES6 [generators](https://developer.mozilla.org/cs/docs/Web/JavaScript/Reference/Statements/function*) is an excellent way how to perform lazy evaluation, it's also a perfect tool for the syntax sugar to simplify working with side effects.
 
-Just imagine, you can `yield` a function which is not executed in the reducer itself but the execution is simply deferred.
+Just imagine, you can `yield` a side effect and framework runtime is responsible for executing it after `reducer` reduces new application state. This ensures that Reducer remains pure.
 
 ```javascript
-const sideEffect = message => () => console.log(message);
+import { sideEffect } from 'redux-side-effects';
+
+const loggingEffect = (dispatch, messaage) => console.log(message);
 
 function* reducer(appState = 1, action) {
-  yield sideEffect('This is side effect');
+  yield sideEffect(loggingEffect, 'This is side effect');
 
   return appState + 1;
 }
@@ -39,7 +41,7 @@ The function is technically pure because it does not execute any side effects an
 
 ## Usage
 
-API of this library is fairly simple, the only possible function is `createEffectCapableStore`. In order to use it in your application you need to import it, keep in mind that it's [named import](http://www.2ality.com/2014/09/es6-modules-final.html#named_exports_%28several_per_module%29) therefore following construct is correct:
+API of this library is fairly simple, the only possible functions are `createEffectCapableStore` and `sideEffect`. `createEffectCapableStore` is a store enhancer which enables us to use Reducers in form of Generators. `sideEffect` returns declarative Side effect and allows us easy testing. In order to use it in your application you need to import it, keep in mind that it's [named import](http://www.2ality.com/2014/09/es6-modules-final.html#named_exports_%28several_per_module%29) therefore following construct is correct:
 
 `import { createEffectCapableStore } from 'redux-side-effects'`
 
@@ -64,15 +66,17 @@ Basically something like this should be fully functional:
 import React from 'react';
 import { render } from 'react-dom';
 import { createStore } from 'redux';
-import { createEffectCapableStore } from 'redux-side-effects';
+import { createEffectCapableStore, sideEffect } from 'redux-side-effects';
 
 import * as API from './API';
 
 const storeFactory = createEffectCapableStore(createStore);
 
+const addTodoEffect = (dispatch, todo) => API.addTodo(todo).then(() => dispatch({type: 'TODO_ADDED'});
+
 const store = storeFactory(function*(appState = {todos: [], loading: false}, action) {
   if (action.type === 'ADD_TODO') {
-    yield dispatch => API.addTodo(action.payload).then(() => dispatch({type: 'TODO_ADDED'}))
+    yield sideEffect(addTodoEffect, action.payload);
 
     return {...appState, todos: [...appState.todos, action.payload], loading: true};
   } else if (action.type === 'TODO_ADDED') {
@@ -84,6 +88,72 @@ const store = storeFactory(function*(appState = {todos: [], loading: false}, act
 
 render(<Application store={store} />, document.getElementById('app-container'));
 
+```
+
+## Declarative Side Effects
+
+The `sideEffect` function is just a very simple declarative way how to express any Side Effect. Basically you can only `yield` result of the function and the function must be called with at least one argument which is Side Effect execution implementation function, all the additional arguments will be passed as arguments to your Side Effect execution implementation function.
+
+```javascript
+const effectImplementation = (dispatch, arg1, arg2, arg3) => {
+  // Your Side Effect implementation
+};
+
+
+yield sideEffect(effectImplementation, 'arg1', 'arg2', 'arg3'....);
+```
+
+Be aware that first argument provided to Side Effect implementation function is always `dispatch` so that you can `dispatch` new actions within Side Effect.
+
+## Unit testing
+
+Unit Testing with `redux-side-effects` is a breeze. You just need to assert iterable which is result of Reducer.
+
+```javascript
+function* reducer(appState) {
+  if (appState === 42) {
+    yield sideEffect(fooEffect, 'arg1');
+
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+// Now we can effectively assert whether app state is correctly mutated and side effect is yielded.
+it('should yield fooEffect with arg1 when condition is met', () => {
+  const iterable = reducer(42);
+
+  assert.deepEqual(iterable.next(), {
+    done: false,
+    value: sideEffect(fooEffect, 'arg1')
+  });
+  assert.equal(iterable.next(), {
+    done: true,
+    value: 1
+  });
+})
+
+```
+
+
+## Example
+
+There's very simple fully working example including unit tests inside `example` folder.
+
+You can check it out by:
+```
+cd example
+npm install
+npm start
+open http://localhost:3000
+```
+
+Or you can run tests by
+```
+cd example
+npm install
+npm test
 ```
 
 ## Contribution
