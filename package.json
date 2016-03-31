@@ -39,6 +39,10 @@
   "bugs": {
     "url": "https://github.com/salsita/redux-side-effects/issues"
   },
+  "engines": {
+    "node": ">=5.0.0",
+    "npm": ">=3.0.0"
+  },
   "homepage": "https://github.com/salsita/redux-side-effects#readme",
   "devDependencies": {
     "babel": "^6.3.26",
