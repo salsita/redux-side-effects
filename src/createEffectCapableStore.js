@@ -1,17 +1,6 @@
 import enhanceReducer from './enhanceReducer';
 
 /**
- * Wraps Store `replaceReducer` method. The implementation just calls
- * the original `replaceReducer` method but the provided next reducer
- * is enhanced.
- *
- * @param {Object} Original Store
- * @returns {Function} Wrapped `replaceReducer`
- */
-export const wrapReplaceReducer = (store, deferEffects) => nextReducer =>
-  store.replaceReducer(enhanceReducer(nextReducer, deferEffects));
-
-/**
  * Creates enhanced store factory, which takes original `createStore` as argument.
  * Returns modified store which is capable of handling Reducers in form of Generators.
  *
@@ -20,15 +9,23 @@ export const wrapReplaceReducer = (store, deferEffects) => nextReducer =>
  */
 export default createStore => (rootReducer, initialState) => {
   let store = null;
+  let replacing = false;
 
-  const deferEffects = effects =>
-    setTimeout(() =>
-      effects.forEach(([fn, ...args]) => fn(store.dispatch, ...args)), 0);
+  const deferEffects = effects => {
+    if (!replacing) {
+      setTimeout(() =>
+        effects.forEach(([fn, ...args]) => fn(store.dispatch, ...args)), 0);
+    }
+  };
 
   store = createStore(enhanceReducer(rootReducer, deferEffects), initialState);
 
   return {
     ...store,
-    replaceReducer: wrapReplaceReducer(store, deferEffects)
+    replaceReducer: nextReducer => {
+      replacing = true;
+      store.replaceReducer(enhanceReducer(nextReducer, deferEffects));
+      replacing = false;
+    }
   };
 };

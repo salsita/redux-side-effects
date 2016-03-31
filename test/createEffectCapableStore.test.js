@@ -77,4 +77,23 @@ describe('Create effect capable store', () => {
       done();
     });
   });
+
+  it('should ignore side effects when any action is dispatched while reducer is being replaced', done => {
+    const effect = spy();
+    function* testingReducer(appState, action) {
+      if (action.type === '@@redux/INIT') {
+        yield sideEffect(effect, 42);
+      }
+      return 1;
+    }
+
+    const testingStore = createEffectCapableStore(createStore)(testingReducer);
+    testingStore.replaceReducer(testingReducer);
+
+    setTimeout(() => {
+      assert.equal(effect.callCount, 1);
+      assert.deepEqual(effect.firstCall.args, [testingStore.dispatch, 42]);
+      done();
+    });
+  });
 });
