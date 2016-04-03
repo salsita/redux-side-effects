@@ -72,7 +72,7 @@ import * as API from './API';
 
 const storeFactory = createEffectCapableStore(createStore);
 
-const addTodoEffect = (dispatch, todo) => API.addTodo(todo).then(() => dispatch({type: 'TODO_ADDED'});
+const addTodoEffect = (dispatch, todo) => API.addTodo(todo).then(() => dispatch({type: 'TODO_ADDED'}));
 
 const store = storeFactory(function*(appState = {todos: [], loading: false}, action) {
   if (action.type === 'ADD_TODO') {
