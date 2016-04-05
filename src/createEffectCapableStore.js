@@ -9,23 +9,33 @@ import enhanceReducer from './enhanceReducer';
  */
 export default createStore => (rootReducer, initialState) => {
   let store = null;
-  let replacing = false;
+  let dispatching = false;
+  let wrappedDispatch = null;
 
   const deferEffects = effects => {
-    if (!replacing) {
+    if (dispatching) {
       setTimeout(() =>
-        effects.forEach(([fn, ...args]) => fn(store.dispatch, ...args)), 0);
+        effects.forEach(([fn, ...args]) => fn(wrappedDispatch, ...args)), 0);
     }
   };
 
+  // it is expected that createStore will do one dispatch before we wrap it
+  dispatching = true;
   store = createStore(enhanceReducer(rootReducer, deferEffects), initialState);
+  dispatching = false;
+
+  wrappedDispatch = (...args) => {
+    dispatching = true;
+    const result = store.dispatch(...args);
+    dispatching = false;
+    return result;
+  };
 
   return {
     ...store,
+    dispatch: wrappedDispatch,
     replaceReducer: nextReducer => {
-      replacing = true;
       store.replaceReducer(enhanceReducer(nextReducer, deferEffects));
-      replacing = false;
     }
   };
 };
