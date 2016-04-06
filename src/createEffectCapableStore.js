@@ -9,27 +9,38 @@ import enhanceReducer from './enhanceReducer';
  */
 export default createStore => (rootReducer, initialState) => {
   let store = null;
-  let dispatching = false;
+  let executeEffects = false; // Flag to indicate whether it's allowed to execute effects
   let wrappedDispatch = null;
 
+  const callWithEffects = fn => {
+    executeEffects = true;
+    const result = fn();
+    executeEffects = false;
+    return result;
+  };
+
   const deferEffects = effects => {
-    if (dispatching) {
-      setTimeout(() =>
-        effects.forEach(([fn, ...args]) => fn(wrappedDispatch, ...args)), 0);
+    if (executeEffects) {
+      setTimeout(() => {
+        if (wrappedDispatch) {
+          effects.forEach(([fn, ...args]) => fn(wrappedDispatch, ...args));
+        } else {
+          // In case anyone tries to do some magic with `setTimeout` while creating store
+          console.warn('There\'s been attempt to execute effects yet proper creating of store has not been finished yet');
+        }
+      }, 0);
     }
   };
 
-  // it is expected that createStore will do one dispatch before we wrap it
-  dispatching = true;
-  store = createStore(enhanceReducer(rootReducer, deferEffects), initialState);
-  dispatching = false;
+  // createStore dispatches @@INIT action and want this action to be dispatched
+  // with effects too
+  callWithEffects(() => {
+    store = createStore(enhanceReducer(rootReducer, deferEffects), initialState);
+  });
 
-  wrappedDispatch = (...args) => {
-    dispatching = true;
-    const result = store.dispatch(...args);
-    dispatching = false;
-    return result;
-  };
+  // only wrapped dispatch executes effects
+  // that ensures that for example devtools do not execute effects while replaying
+  wrappedDispatch = (...args) => callWithEffects(() => store.dispatch(...args));
 
   return {
     ...store,

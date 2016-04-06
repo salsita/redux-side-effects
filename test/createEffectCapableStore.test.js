@@ -1,12 +1,11 @@
 import { assert } from 'chai';
-import { stub, spy } from 'sinon';
-import { createStore, compose } from 'redux';
+import { spy } from 'sinon';
+import { createStore } from 'redux';
 
 import sideEffect from '../src/sideEffect';
 import createEffectCapableStore from '../src/createEffectCapableStore';
 
 describe('Create effect capable store', () => {
-
   it('should execute all the effects in next call stack', done => {
     const effect = spy();
 
@@ -93,6 +92,47 @@ describe('Create effect capable store', () => {
     setTimeout(() => {
       assert.equal(effect.callCount, 1);
       assert.deepEqual(effect.firstCall.args, [testingStore.dispatch, 42]);
+      done();
+    });
+  });
+
+  it('should return action result when dispatch is called so that middleware chain is not broken', () => {
+    function* reducer() {
+      return 1;
+    }
+
+    const action = { type: 'foo' };
+    const testingStore = createEffectCapableStore(createStore)(reducer);
+    const result = testingStore.dispatch(action);
+    assert.equal(result, action);
+  });
+
+  it('should not execute effects when original dispatch function is called', done => {
+    const effect = spy();
+    const returnValue = spy(() => 42);
+
+    function* testingReducer() {
+      yield sideEffect(effect);
+      return returnValue();
+    }
+
+    const storeEnhancer = reducer => {
+      const store = createStore(reducer, undefined);
+
+      return {
+        ...store,
+        liftedDispatch: store.dispatch
+      };
+    };
+
+    const store = createEffectCapableStore(storeEnhancer)(testingReducer);
+    store.liftedDispatch({
+      type: 'FOO'
+    });
+
+    assert.equal(returnValue.callCount, 2);
+    setTimeout(() => {
+      assert.equal(effect.callCount, 1);
       done();
     });
   });
