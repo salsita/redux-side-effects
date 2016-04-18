@@ -46,28 +46,19 @@
   "homepage": "https://github.com/salsita/redux-side-effects#readme",
   "devDependencies": {
     "babel": "^6.3.26",
-    "babel-cli": "^6.4.5",
-    "babel-core": "^6.4.5",
-    "babel-eslint": "^5.0.0-beta6",
-    "babel-plugin-transform-runtime": "^6.4.3",
+    "babel-cli": "^6.7.5",
+    "babel-core": "^6.7.6",
+    "babel-eslint": "^6.0.2",
+    "babel-plugin-transform-runtime": "^6.7.5",
     "babel-preset-es2015": "^6.3.13",
     "babel-preset-stage-0": "^6.3.13",
     "babel-runtime": "^6.3.19",
     "chai": "^3.4.1",
-    "eslint": "^2.4.0",
+    "eslint": "^2.8.0",
     "estraverse-fb": "^1.3.1",
     "isparta": "^4.0.0",
     "mocha": "^2.2.5",
-    "redux": "^3.0.4",
+    "redux": "^3.4.0",
     "sinon": "^1.17.2"
-  },
-  "babel": {
-    "presets": [
-      "es2015",
-      "stage-0"
-    ],
-    "plugins": [
-      "transform-runtime"
-    ]
   }
 }
