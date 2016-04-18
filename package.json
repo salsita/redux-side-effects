@@ -1,6 +1,6 @@
 {
   "name": "redux-side-effects",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Redux toolset for keeping all the side effects inside your reducers while maintaining their purity.",
   "main": "lib/index.js",
   "files": [
