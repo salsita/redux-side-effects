@@ -28,7 +28,7 @@ Just imagine, you can `yield` a side effect and framework runtime is responsible
 ```javascript
 import { sideEffect } from 'redux-side-effects';
 
-const loggingEffect = (dispatch, messaage) => console.log(message);
+const loggingEffect = (dispatch, message) => console.log(message);
 
 function* reducer(appState = 1, action) {
   yield sideEffect(loggingEffect, 'This is side effect');
